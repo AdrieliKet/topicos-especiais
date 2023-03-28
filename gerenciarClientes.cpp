@@ -34,8 +34,8 @@ void cadastrar_titular() {
     // Verifica se já existe um cliente com o mesmo ID 
     while (buscar_cliente(novo_cliente->id) != NULL) {
         cout << "\nJá existe um cliente com esse ID. Tente novamente.\n";
-        delete novo_cliente;
-        return;
+        cout << "\nInforme o ID do cliente: ";
+    	cin >> novo_cliente->id;
     }
     lista_clientes.push_back(novo_cliente);
     cout << "\nCliente cadastrado com sucesso!\n";
