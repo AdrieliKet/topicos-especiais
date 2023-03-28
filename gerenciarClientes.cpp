@@ -94,9 +94,9 @@ void excluir_cliente() {
 	// Verifica se o cliente é titular de algum dependente
 	for (auto it = lista_clientes.begin(); it != lista_clientes.end(); it++) {
 		if ((*it)->titular == cliente) {
-		cout << "\nNão é possível excluir um titular com dependentes. Remova os dependentes antes.\n";
-		return;
-	}
+			cout << "\nNão é possível excluir um titular com dependentes. Remova os dependentes antes.\n";
+			return;
+		}
 	}
 	lista_clientes.remove(cliente);
 	delete cliente;
@@ -123,10 +123,11 @@ void modificar_cliente() {
 
 void visualizar_clientes() {
 	cout << "\nLista de clientes cadastrados:\n";
-	for (auto it = lista_clientes.begin(); it != lista_clientes.end(); it++) {
-		cout << "ID: " << (*it)->id << " | Nome: " << (*it)->nome << " | Idade: " << (*it)->idade;
-		if ((*it)->titular != NULL) {
-			cout << " | Titular: " << (*it)->titular->nome;
+	// mudar para : 
+	for (Cliente* cliente: lista_clientes ) {
+		cout << "ID: " << cliente->id << " | Nome: " << cliente->nome << " | Idade: " << cliente->idade;
+		if (cliente->titular != NULL) {
+			cout << " | Titular: " << cliente->titular->nome;
 		}
 		cout << endl;
 	}
