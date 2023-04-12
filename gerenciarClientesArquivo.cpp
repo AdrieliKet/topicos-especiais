@@ -103,7 +103,7 @@ void excluir_cliente() {
  
     cliente->is_excluido = true;
     fseek(arquivo, -sizeof(Cliente), SEEK_CUR);
-    fwrite(&cliente, sizeof(Cliente), 1, arquivo);
+    fwrite(cliente, sizeof(Cliente), 1, arquivo);
 
     cout << "\nCliente excluído com sucesso!\n";
 }
