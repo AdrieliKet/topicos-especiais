@@ -9,6 +9,7 @@ struct Cliente {
     char nome[50];
     int idade;
     int titular;
+    bool is_excluido = false;
 };
 
 FILE* arquivo;
@@ -58,6 +59,8 @@ void cadastrar_dependente() {
     cout << "Informe o ID do titular: ";
     cin >> id_titular;
     Cliente* titular = buscar_cliente(id_titular);
+    
+    // melhorar as verificações
     // Verifica se o titular existe 
     while (titular == NULL) {
         cout << "\nTitular não encontrado. Tente novamente.\n";
@@ -91,19 +94,16 @@ void excluir_cliente() {
     cout << "\nInforme o ID do cliente que deseja excluir: ";
     cin >> id_cliente;
 
-    // Busca o cliente correspondente pelo ID 
     Cliente* cliente = buscar_cliente(id_cliente);
 
-    // Verifica se o cliente existe 
     if (cliente == NULL) {
         cout << "\nCliente não encontrado. Tente novamente.\n";
         return;
     }
-
-    // Remove o cliente do arquivo 
-    Cliente cliente_vazio;
+ 
+    cliente->is_excluido = true;
     fseek(arquivo, -sizeof(Cliente), SEEK_CUR);
-    fwrite(&cliente_vazio, sizeof(Cliente), 1, arquivo);
+    fwrite(&cliente, sizeof(Cliente), 1, arquivo);
 
     cout << "\nCliente excluído com sucesso!\n";
 }
@@ -133,9 +133,11 @@ void visualizar_clientes() {
     cout << "\nLista de clientes cadastrados:\n";
 
     while (fread(&cliente, sizeof(Cliente), 1, arquivo) == 1) {
-        cout << "ID: " << cliente.id << " | Nome: " << cliente.nome << " | Idade: " << cliente.idade;
-        if (cliente.titular != 0) {
-            cout << " | Código Titular: " << cliente.titular;
+    	if(cliente.is_excluido != true) {
+        	cout << "ID: " << cliente.id << " | Nome: " << cliente.nome << " | Idade: " << cliente.idade << " | Excluido: " << cliente.is_excluido;
+        	if (cliente.titular != 0) {
+            	cout << " | Código Titular: " << cliente.titular;
+        	}
         }
         cout << endl;
     }
