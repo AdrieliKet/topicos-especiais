@@ -115,6 +115,8 @@ void excluir_cliente() {
         cout << "\nCliente não encontrado. Tente novamente.\n";
         return;
     }
+	
+	//verificar se o titular está relacionado a algum dependente
  
     cliente->is_excluido = true;
     long posicao = sizeof(Cliente) * (id_cliente - 1);
