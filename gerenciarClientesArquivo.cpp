@@ -13,6 +13,9 @@ struct Cliente {
 };
 
 FILE* arquivo;
+char nomeArquivo[] ="clientes.txt";
+char nomeArquivoExclusao[] ="exc.txt";
+char nomeArquivoAlteracao[] ="alt.txt";
 
 Cliente* buscar_cliente(int id) {
     Cliente* cliente = new Cliente;
@@ -25,6 +28,18 @@ Cliente* buscar_cliente(int id) {
     delete cliente;
     return NULL;
 }
+
+Cliente buscar(int id) {
+    Cliente cliente;
+    fseek(arquivo, 0, SEEK_SET);
+    while (fread(&cliente, sizeof(Cliente), 1, arquivo) == 1) {
+        if (cliente.id == id) {
+            return cliente;
+        }
+    }
+    return Cliente();
+}
+
 
 void cadastrar_titular() {
     Cliente novo_cliente;
@@ -102,11 +117,13 @@ void excluir_cliente() {
     }
  
     cliente->is_excluido = true;
-    fseek(arquivo, -sizeof(Cliente), SEEK_CUR);
+    long posicao = sizeof(Cliente) * (id_cliente - 1);
+    fseek(arquivo, posicao, SEEK_SET);
     fwrite(cliente, sizeof(Cliente), 1, arquivo);
 
     cout << "\nCliente excluído com sucesso!\n";
 }
+
 
 //corrigir
 void modificar_cliente() {
@@ -122,7 +139,8 @@ void modificar_cliente() {
     cin >> cliente->nome;
     cout << "Informe a nova idade do cliente: ";
     cin >> cliente->idade;
-    fseek(arquivo, -sizeof(Cliente), SEEK_CUR);
+    long posicao = sizeof(Cliente) * (id_cliente - 1);
+    fseek(arquivo, posicao, SEEK_SET);
     fwrite(cliente, sizeof(Cliente), 1, arquivo);
     cout << "\nCliente modificado com sucesso!\n";
 }
@@ -134,7 +152,7 @@ void visualizar_clientes() {
 
     while (fread(&cliente, sizeof(Cliente), 1, arquivo) == 1) {
     	if(cliente.is_excluido != true) {
-        	cout << "ID: " << cliente.id << " | Nome: " << cliente.nome << " | Idade: " << cliente.idade << " | Excluido: " << cliente.is_excluido;
+        	cout << "ID: " << cliente.id << " | Nome: " << cliente.nome << " | Idade: " << cliente.idade;
         	if (cliente.titular != 0) {
             	cout << " | Código Titular: " << cliente.titular;
         	}
