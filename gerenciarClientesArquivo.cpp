@@ -1,5 +1,4 @@
 #include <iostream>
-#include <list>
 #include <stdio.h>
 using namespace std;
 
@@ -8,28 +7,13 @@ struct Cliente {
     int id;
     char nome[50];
     int idade;
-    int titular;
+    int titular = 0;
     bool is_excluido = false;
 };
 
 FILE* arquivo;
-char nomeArquivo[] ="clientes.txt";
-char nomeArquivoExclusao[] ="exc.txt";
-char nomeArquivoAlteracao[] ="alt.txt";
 
-Cliente* buscar_cliente(int id) {
-    Cliente* cliente = new Cliente;
-    fseek(arquivo, 0, SEEK_SET);
-    while (fread(cliente, sizeof(Cliente), 1, arquivo) == 1) {
-        if (cliente->id == id) {
-            return cliente;
-        }
-    }
-    delete cliente;
-    return NULL;
-}
-
-Cliente buscar(int id) {
+Cliente buscar_cliente(int id) {
     Cliente cliente;
     fseek(arquivo, 0, SEEK_SET);
     while (fread(&cliente, sizeof(Cliente), 1, arquivo) == 1) {
@@ -40,18 +24,22 @@ Cliente buscar(int id) {
     return Cliente();
 }
 
-
 void cadastrar_titular() {
     Cliente novo_cliente;
     cout << "\nInforme o ID do cliente: ";
     cin >> novo_cliente.id;
+    while (novo_cliente.id <= 0) {
+        cout << "\nInsira um valor maior que 0.\n";
+        cout << "\nInforme o ID do cliente: ";
+    	cin >> novo_cliente.id;
+    }
     cout << "Informe o nome do cliente: ";
     cin >> novo_cliente.nome;
     cout << "Informe a idade do cliente: ";
     cin >> novo_cliente.idade;
     novo_cliente.titular = 0;
-    // Verifica se já existe um cliente com o mesmo ID 
-    while (buscar_cliente(novo_cliente.id) != NULL) {
+ 
+    while (buscar_cliente(novo_cliente.id).id != 0) {
         cout << "\nJá existe um cliente com esse ID. Tente novamente.\n";
         cout << "\nInforme o ID do cliente: ";
     	cin >> novo_cliente.id;
@@ -65,85 +53,90 @@ void cadastrar_dependente() {
     Cliente novo_dependente;
     cout << "\nInforme o ID do dependente: ";
     cin >> novo_dependente.id;
+    while (novo_dependente.id <= 0) {
+        cout << "\nInsira um valor maior que 0.\n";
+        cout << "\nInforme o ID do cliente: ";
+    	cin >> novo_dependente.id;
+    }
     cout << "Informe o nome do dependente: ";
     cin >> novo_dependente.nome;
     cout << "Informe a idade do dependente: ";
     cin >> novo_dependente.idade;
-    // Busca o titular correspondente pelo ID 
+
     int id_titular;
     cout << "Informe o ID do titular: ";
     cin >> id_titular;
-    Cliente* titular = buscar_cliente(id_titular);
+    Cliente titular = buscar_cliente(id_titular);
     
-    // melhorar as verificações
-    // Verifica se o titular existe 
-    while (titular == NULL) {
+    while (titular.id == 0) {
         cout << "\nTitular não encontrado. Tente novamente.\n";
         cout << "Informe o ID do titular: ";
         cin >> id_titular;
         titular = buscar_cliente(id_titular);
     }
        
-    // Verifica se é dependente, se for não deixa passar como titular
-    while (titular->titular != 0) {
+    while (titular.titular != 0) {
         cout << "\nNão é possível cadastrar um dependente como titular. Tente novamente.\n";
         cout << "\nInforme o ID do titular: ";
         cin >> id_titular;
         titular = buscar_cliente(id_titular);
     }
-    // Verifica se o titular já possui um titular/dependente com o mesmo ID 
-    while (buscar_cliente(novo_dependente.id) != NULL) {
+
+    while (buscar_cliente(novo_dependente.id).id != 0) {
         cout << "\nJá existe um cliente/dependente com esse ID. Tente novamente.\n";
         cout << "\nInforme o ID do dependente: ";
         cin >> novo_dependente.id;
     }
-    novo_dependente.titular = titular->id;
+    novo_dependente.titular = titular.id;
     fseek(arquivo, 0, SEEK_END);
     fwrite(&novo_dependente, sizeof(Cliente), 1, arquivo);
     cout << "\nDependente cadastrado com sucesso!\n";
 }
 
-//corrigir
 void excluir_cliente() {
     int id_cliente;
     cout << "\nInforme o ID do cliente que deseja excluir: ";
     cin >> id_cliente;
 
-    Cliente* cliente = buscar_cliente(id_cliente);
+    Cliente cliente = buscar_cliente(id_cliente);
 
-    if (cliente == NULL) {
+    if (cliente.id == 0) {
         cout << "\nCliente não encontrado. Tente novamente.\n";
         return;
     }
-	
-	//verificar se o titular está relacionado a algum dependente
+    
+    while (fread(&cliente, sizeof(Cliente), 1, arquivo) == 1) {
+		if (cliente.titular == id_cliente && cliente.is_excluido == false) {
+			cout << "\nNão é possível excluir um titular com dependentes. Remova os dependentes antes.\n";
+			return;
+		}
+	}
+
  
-    cliente->is_excluido = true;
-    long posicao = sizeof(Cliente) * (id_cliente - 1);
-    fseek(arquivo, posicao, SEEK_SET);
-    fwrite(cliente, sizeof(Cliente), 1, arquivo);
+    cliente.is_excluido = true;
+
+    fseek(arquivo, -sizeof(Cliente), SEEK_CUR);
+    fwrite(&cliente, sizeof(Cliente), 1, arquivo);
 
     cout << "\nCliente excluído com sucesso!\n";
 }
 
-
-//corrigir
 void modificar_cliente() {
     int id_cliente;
     cout << "\nInforme o ID do cliente que deseja modificar: ";
     cin >> id_cliente;
-    Cliente* cliente = buscar_cliente(id_cliente);
-    if (cliente == NULL) {
+    Cliente cliente = buscar_cliente(id_cliente);
+    if (cliente.id == 0) {
         cout << "\nCliente não encontrado.\n";
         return;
     }
     cout << "\nInforme o novo nome do cliente: ";
-    cin >> cliente->nome;
+    cin >> cliente.nome;
     cout << "Informe a nova idade do cliente: ";
-    cin >> cliente->idade;
-    long posicao = sizeof(Cliente) * (id_cliente - 1);
-    fseek(arquivo, posicao, SEEK_SET);
-    fwrite(cliente, sizeof(Cliente), 1, arquivo);
+    cin >> cliente.idade;
+
+    fseek(arquivo, -sizeof(Cliente), SEEK_CUR);
+    fwrite(&cliente, sizeof(Cliente), 1, arquivo);
     cout << "\nCliente modificado com sucesso!\n";
 }
 
@@ -171,7 +164,7 @@ void visualizar_clientes() {
 }
 
 int main() {
-    arquivo = fopen("clientes.txt", "ab+");
+    arquivo = fopen("clientes.txt", "rb+");
     if (!arquivo)
     {
         cout << "Erro ao abrir o arquivo!\n";
