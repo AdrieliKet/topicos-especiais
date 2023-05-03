@@ -8,7 +8,7 @@ struct Cliente {
     char nome[50];
     int idade;
     int titular = 0;
-    bool is_excluido = false;
+    bool excluido = false;
 };
 
 FILE* arquivo;
@@ -106,14 +106,14 @@ void excluir_cliente() {
     }
     
     while (fread(&cliente, sizeof(Cliente), 1, arquivo) == 1) {
-		if (cliente.titular == id_cliente && cliente.is_excluido == false) {
+		if (cliente.titular == id_cliente && cliente.excluido == false) {
 			cout << "\nNão é possível excluir um titular com dependentes. Remova os dependentes antes.\n";
 			return;
 		}
 	}
 
  
-    cliente.is_excluido = true;
+    cliente.excluido = true;
 
     fseek(arquivo, -sizeof(Cliente), SEEK_CUR);
     fwrite(&cliente, sizeof(Cliente), 1, arquivo);
@@ -146,7 +146,7 @@ void visualizar_clientes() {
     cout << "\nLista de clientes cadastrados:\n";
 
     while (fread(&cliente, sizeof(Cliente), 1, arquivo) == 1) {
-    	if(cliente.is_excluido != true) {
+    	if(cliente.excluido != true) {
         	cout << "ID: " << cliente.id << " | Nome: " << cliente.nome << " | Idade: " << cliente.idade;
         	if (cliente.titular != 0) {
             	cout << " | Código Titular: " << cliente.titular;
