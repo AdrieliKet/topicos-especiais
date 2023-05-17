@@ -4,7 +4,7 @@ using namespace std;
 
 
 struct Cliente {
-    int id;
+    int id = 0;
     char nome[50];
     int idade;
     int titular = 0;
@@ -17,7 +17,7 @@ Cliente buscar_cliente(int id) {
     Cliente cliente;
     fseek(arquivo, 0, SEEK_SET);
     while (fread(&cliente, sizeof(Cliente), 1, arquivo) == 1) {
-        if (cliente.id == id) {
+        if (cliente.id == id && !cliente.excluido) {
             return cliente;
         }
     }
@@ -105,6 +105,7 @@ void excluir_cliente() {
         return;
     }
     
+    fseek(arquivo, 0, SEEK_SET);
     while (fread(&cliente, sizeof(Cliente), 1, arquivo) == 1) {
 		if (cliente.titular == id_cliente && cliente.excluido == false) {
 			cout << "\nNão é possível excluir um titular com dependentes. Remova os dependentes antes.\n";
